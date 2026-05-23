@@ -3,16 +3,23 @@ import numpy as np
 def convolve(img, kernel):
     img_h, img_w = img.shape
     ker_h, ker_w = kernel.shape
-    
-    out_h = img_h - ker_h + 1
-    out_w = img_w - ker_w + 1
-    output = np.zeros((out_h, out_w))
+
+    pad_h = ker_h // 2
+    pad_w = ker_w // 2
+
+    padded = np.pad(
+        img,
+        ((pad_h, pad_h), (pad_w, pad_w)),
+        mode='constant'
+    )
     
     kernel = np.flipud(np.fliplr(kernel))
     
-    for i in range(out_h):
-        for j in range(out_w):
-            region = img[i : i+ker_h, j : j+ker_w]
+    output = np.zeros((img_h, img_w))
+
+    for i in range(img_h):
+        for j in range(img_w):
+            region = padded[i:i+ker_h, j:j+ker_w]
             output[i, j] = np.sum(region * kernel)
             
     return output
@@ -27,7 +34,7 @@ def gaussian_kernel(size=5, sigma=1.0):
     return kernel
 
 def gaussian_blur(img, sigma=1.0):
-    size = int(6 * sigma + 1)
+    size = 6 * sigma + 1
     if size % 2 == 0:
         size += 1
 
@@ -56,60 +63,57 @@ def sobel(img):
 
     return magnitude, theta
 
-def non_max_suppression(img, D):
-    M, N = img.shape
-    Z = np.zeros((M,N), dtype=np.int32)
-    angle = D * 180. / np.pi
+def non_max_suppression(img, theta):
+    img_w, img_h = img.shape
+    output = np.zeros((img_w,img_h))
+    angle = theta * 180. / np.pi
     angle[angle < 0] += 180
-
     
-    for i in range(1,M-1):
-        for j in range(1,N-1):
+    for i in range(1,img_w-1):
+        for j in range(1,img_h-1):
             try:
                 q = 255
                 r = 255
                 
-               #angle 0
+               # 0*
                 if (0 <= angle[i,j] < 22.5) or (157.5 <= angle[i,j] <= 180):
                     q = img[i, j+1]
                     r = img[i, j-1]
-                #angle 45
+                # 45*
                 elif (22.5 <= angle[i,j] < 67.5):
                     q = img[i+1, j-1]
                     r = img[i-1, j+1]
-                #angle 90
+                # 90*
                 elif (67.5 <= angle[i,j] < 112.5):
                     q = img[i+1, j]
                     r = img[i-1, j]
-                #angle 135
+                # 135*
                 elif (112.5 <= angle[i,j] < 157.5):
                     q = img[i-1, j-1]
                     r = img[i+1, j+1]
 
                 if (img[i,j] >= q) and (img[i,j] >= r):
-                    Z[i,j] = img[i,j]
+                    output[i,j] = img[i,j]
                 else:
-                    Z[i,j] = 0
+                    output[i,j] = 0
 
             except IndexError as e:
                 pass
     
-    return Z
+    return output
 
-def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
+def threshold(img, lowThresholdRatio=0.2, highThresholdRatio=0.3):
     
     highThreshold = img.max() * highThresholdRatio
     lowThreshold = highThreshold * lowThresholdRatio
     
-    M, N = img.shape
-    res = np.zeros((M,N), dtype=np.int32)
+    img_w, img_h = img.shape
+    res = np.zeros((img_w, img_h))
     
     weak = np.int32(25)
     strong = np.int32(255)
     
     strong_i, strong_j = np.where(img >= highThreshold)
-    zeros_i, zeros_j = np.where(img < lowThreshold)
-    
     weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
     
     res[strong_i, strong_j] = strong
@@ -133,11 +137,48 @@ def hysteresis(img, weak, strong=255):
                     pass
     return img
 
-def edge_detector(img, sigma):
+def edge_detector(img, sigma, live_viewer=True):
+    if live_viewer:
+        try:
+            import matplotlib.pyplot as plt
+        except: 
+            print("Failed to import matplotlib!")
+            return False
+        plt.ion()
+        if plt.get_fignums():  # if any figure already exists
+            plt.close('all')
+        
     img = np.mean(img, axis=2)
+
+    if live_viewer:
+        fig, ax = plt.subplots()
+        im = ax.imshow(img, cmap='gray')
+        ax.set_title(f"Canny Edge Detection (σ = {sigma})")
+        plt.axis("off")
+        plt.show()
+        plt.pause(0.5)
+
+    def update(img):
+        if live_viewer:
+            im.set_data(img)
+            plt.draw()
+            plt.pause(0.1)
+    
+    update(img)
+
     img = gaussian_blur(img, sigma)
+    update(img)
+
     img, theta = sobel(img)
+    update(img)
+
     img = non_max_suppression(img, theta)
-    img, weak, strong = threshold(img, 0.1, 0.2)
+    update(img)
+
+    img, weak, strong = threshold(img)
+    update(img)
+
     img = hysteresis(img, weak, strong)
+    update(img)
+
     return img

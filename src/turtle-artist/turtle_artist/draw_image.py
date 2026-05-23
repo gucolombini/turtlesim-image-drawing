@@ -4,6 +4,24 @@ import numpy as np
 import rclpy
 import turtle_artist.canny as canny
 from ament_index_python.packages import get_package_share_directory
+import tkinter as tk
+from tkinter import filedialog
+import matplotlib.pyplot as plt
+
+def pick_image_file():
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename(
+        title="Select an image (or don't, if you want a dog)",
+        filetypes=[
+            ("Image files", "*.png *.jpg *.jpeg *.bmp"),
+            ("All files", "*.*")
+        ]
+    )
+
+    root.destroy()
+    return file_path
 
 def neighbors(x, y, img):
     h, w = img.shape
@@ -33,7 +51,7 @@ def trace_curve(img, visited, start):
         next_pixels = [n for n in neighbors(x, y, img) if not visited[n]]
 
         if next_pixels:
-            stack.append(next_pixels[0])  # follow one branch
+            stack.append(next_pixels[0])
 
     return curve
 
@@ -64,15 +82,25 @@ def main():
 
     from turtle_artist.turtle_controller import TurtleController
 
-    share_dir = get_package_share_directory('turtle-artist')
-    image_path = os.path.join(share_dir, 'input.jpeg')
+    image_path = pick_image_file()
+
+    if not image_path:
+        print("No image selected. Loading default image (the dog).")
+        share_dir = get_package_share_directory('turtle-artist')
+        image_path = os.path.join(share_dir, 'input.jpeg')
 
     img = cv2.imread(image_path)
+
+    if img is None:
+        print(f"Failed to load image: {image_path}")
+        rclpy.shutdown()
+        return
     
+    img = cv2.resize(img, (512, 512))
 
     turtle = TurtleController()
 
-    sigma = 3
+    sigma = 1
     success = False
     max_curves = 400
     while not success:
@@ -85,23 +113,20 @@ def main():
         sigma += 1
         print(f"Found {len(curves)} curves")
 
-    
     turtle.pen_up()
+    turtle.clear()
 
-    # follow each curve
     for curve in curves:
 
         if len(curve) < 2:
             continue
 
-        # move to start
         x0, y0 = curve[0]
         wx, wy = to_world(x0, y0, img_edges.shape)
 
         turtle.teleport(wx, wy)
-        turtle.pen_down()
+        turtle.pen_down(width=2)
 
-        # follow curve
         for x, y in curve[1:]:
             wx, wy = to_world(x, y, img_edges.shape)
             turtle.teleport(wx, wy)

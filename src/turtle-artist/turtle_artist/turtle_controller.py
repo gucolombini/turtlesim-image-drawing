@@ -1,7 +1,8 @@
 import rclpy
 from rclpy.node import Node
 
-from turtlesim.srv import TeleportAbsolute, SetPen, TeleportRelative
+from turtlesim.srv import TeleportAbsolute, SetPen
+from std_srvs.srv import Empty
 
 class TurtleController(Node):
     def __init__(self, turtle_name="turtle1"):
@@ -17,9 +18,9 @@ class TurtleController(Node):
             f"/{turtle_name}/set_pen"
         )
 
-        self.teleport_relative_client = self.create_client(
-            TeleportRelative,
-            f"/{turtle_name}/teleport_relative"
+        self.clear_client = self.create_client(
+            Empty,
+            f"/clear"
         )
 
         while not self.teleport_client.wait_for_service(timeout_sec=1.0):
@@ -28,6 +29,9 @@ class TurtleController(Node):
         while not self.pen_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("Waiting for set_pen service...")
 
+        while not self.clear_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("Waiting for clear service...")
+
     def teleport(self, x, y, theta=0.0):
         request = TeleportAbsolute.Request()
         request.x = float(x)
@@ -35,14 +39,6 @@ class TurtleController(Node):
         request.theta = float(theta)
 
         future = self.teleport_client.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
-
-    def teleport_relative(self, lin, ang=0.0):
-        request = TeleportRelative.Request()
-        request.linear = float(lin)
-        request.angular = float(ang)
-
-        future = self.teleport_relative_client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
 
     def pen_up(self):
@@ -67,11 +63,17 @@ class TurtleController(Node):
         future = self.pen_client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
 
+    def clear(self):
+        request = Empty.Request()
+        future = self.clear_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
 
 def main():
     rclpy.init()
 
     turtle = TurtleController()
+
+    turtle.clear()
 
     turtle.pen_up()
     turtle.teleport(2.0, 2.0)
