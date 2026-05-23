@@ -15,7 +15,7 @@ def pick_image_file():
     file_path = filedialog.askopenfilename(
         title="Select an image (or don't, if you want a dog)",
         filetypes=[
-            ("Image files", "*.png *.jpg *.jpeg *.bmp"),
+            ("Image files", "*.png *.jpg *.jpeg *.bmp *.webp"),
             ("All files", "*.*")
         ]
     )
@@ -102,7 +102,7 @@ def main():
 
     sigma = 1
     success = False
-    max_curves = 400
+    max_curves = 600
     while not success:
         print(f"Running Canny Edge Detection with Sigma = {sigma}. Aiming for < {max_curves} curves")
         img_edges = canny.edge_detector(img, sigma)
