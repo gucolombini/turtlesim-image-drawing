@@ -170,7 +170,7 @@ def threshold(img, lowThresholdRatio=0.2, highThresholdRatio=0.3):
 
 <img src='assets/img_4.png'>
 
-*Imagem após a supressão de não-máximos (note os pixels fracos ainda presentes na imagem)*
+*Imagem após a limiarização dupla (note os pixels fracos ainda presentes na imagem)*
 
 ### 5. Histerese
 
