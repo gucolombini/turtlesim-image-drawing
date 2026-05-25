@@ -3,7 +3,8 @@
 Uma aplicação que é capaz de importar qualquer imagem que o usuário desejar e comandar de forma autônoma o TurtleSim para fazer o desenho do contorno da imagem. Isso é realizado por meio da pipeline Canny de detecção de bordas, com todas as transformações da imagem sendo realizadas por manipulação direta das matrizes por meio da biblioteca Numpy, sem uso de funções já existentes do OpenCV.
 
 <img src='assets/demo.gif'>
-GIF de demonstração da aplicação, desenhando uma imagem da Hatsune Miku
+
+*GIF de demonstração da aplicação, desenhando uma imagem da Hatsune Miku*
 
 ## [Vídeo de demonstração básica](https://drive.google.com/file/d/1wbNXbA-2_1UmZSjmlqh7RT_y6LZbaexj/view?usp=sharing)
 
@@ -215,7 +216,7 @@ def hysteresis(img, weak, strong=255):
 
 <img src='assets/img_5.png'>
 
-*Imagem após histerese, resultado final da pipeline*
+*Imagem após histerese, resultado final da pipeline com σ = 2*
 
 ## Planejamento de caminho
 
