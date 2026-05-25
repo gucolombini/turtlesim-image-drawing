@@ -1,19 +1,38 @@
-# Turtlesim Image Drawing
----
-Uma aplicação que é capaz de importar qualquer imagem que o usuário desejar e comandar de forma autônoma o Turtlesim para fazer o desenho do contorno da imagem. Isso é realizado por meio da pipeline Canny de detecção de bordas, com todas as transformações da imagem sendo realizadas por manipulação direta das matrizes por meio da biblioteca Numpy, sem uso de funções já existentes do OpenCV.
+# TurtleSim Image Drawing
+
+Uma aplicação que é capaz de importar qualquer imagem que o usuário desejar e comandar de forma autônoma o TurtleSim para fazer o desenho do contorno da imagem. Isso é realizado por meio da pipeline Canny de detecção de bordas, com todas as transformações da imagem sendo realizadas por manipulação direta das matrizes por meio da biblioteca Numpy, sem uso de funções já existentes do OpenCV.
 
 <img src='assets/demo.gif'>
+GIF de demonstração da aplicação, desenhando uma imagem da Hatsune Miku
 
 ## [Vídeo de demonstração básica](https://drive.google.com/file/d/1wbNXbA-2_1UmZSjmlqh7RT_y6LZbaexj/view?usp=sharing)
 
 # Instruções de Execução
 
+## Requisitos:
+
+- Ubuntu (debatível)
+- ROS2 com TurtleSim
+- Python3 + rosdep + colcon
+
+**Esse projeto usa sua instalação padrão de Python**; se houver problemas com dependências, tente usar uma versão mais recente. *(aka eu não sei configurar um ambiente virtual pra pacotes ROS2)*
+
+Antes de tudo, dê source na sua instalação favorita de ROS2 (troque "humble" pelo nome correspondente):
+```bash
+source /opt/ros/humble/setup.bash
+```
+
 Clone esse repositório em seu dispositivo. Na raiz do repositório, execute:
+```bash
+rosdep install --from-paths src --ignore-src -r -y
+```
+
+Se todas as dependências forem instaladas com sucesso, execute o seguinte comando para buildar o pacote:
 ```bash
 colcon build
 ```
 
-Após o processo finalizar com sucesso, inicie o Turtlesim em outro terminal e execute o seguinte comando para iniciar o processo de desenho da imagem (Uma conexão estável é necessária para garantir a execução do programa sem erros!):
+Após o processo finalizar com sucesso, inicie o TurtleSim em outro terminal e execute o seguinte comando para iniciar o processo de desenho da imagem (Uma conexão estável é necessária para garantir a execução do programa sem erros!):
 
 ```bash
 source install/setup.bash

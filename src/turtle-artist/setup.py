@@ -13,7 +13,9 @@ setup(
         ('share/' + package_name,
         ['turtle_artist/input.jpeg']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+    ],
     zip_safe=True,
     maintainer='guco',
     maintainer_email='gucolombini@gmail.com',
